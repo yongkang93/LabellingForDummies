@@ -5,50 +5,29 @@ from PyQt5 import QtWidgets, QtCore, QtGui
 
 rect1 = []   # Start position of label
 rect2 = []   # End position of label
-filename=""
 
 class LFDImagePanel(QWidget):
     def __init__(self):
         super().__init__()
 
-        """"Choose File to open"""
-        self.filename=self.openFile()
-        self.button = QPushButton("File")
-        self.button.clicked.connect(self.openFile)
+        self.filename = None
+        self.signals  = {}
 
-        """Initialize"""
-        self.title = 'PyQt5 image'
-        self.left = 0
-        self.top = 0
-        self.width = 640
-        self.height = 480
-        self.setWindowTitle('Testing123')
-
-        """Set Menu"""
-        chooseAct = QAction(QIcon('choose.png'), '&Choose File', self)
-        chooseAct.setShortcut('Ctrl+Q')
-        chooseAct.setStatusTip('Choose File')
-        chooseAct.triggered.connect(self.openFile)
-
-        """Set drawing rectangle"""
-        self.setGeometry(self.left, self.top, self.width, self.height)
-
-        #set points
-        self.begin = QtCore.QPoint()
-        self.end = QtCore.QPoint()
-        self.show()
+        self.begin    = QtCore.QPoint()
+        self.end      = QtCore.QPoint()
 
 
-    def openFile(self):
-        options = QFileDialog.Options()
+    def addSignal(self, signal):
+        self.signals.update(signal)
 
-        options |= QFileDialog.DontUseNativeDialog
-        fileName, _ = QFileDialog.getOpenFileName(None, "QFileDialog.getOpenFileName()", "",
-                                                  "All Files (*);;JPG (*.jpg)", options=options)
-        self.filename=fileName.split('/')[-1]
+
+    def setImage(self, imageName):
+        if type(imageName) is str:
+            self.filename = imageName
+        else:
+            self.filename = imageName.text()
+
         self.update()
-        print(filename)
-        return self.filename
 
 
     # Get initial position
@@ -92,14 +71,16 @@ class LFDImagePanel(QWidget):
     def mouseReleaseEvent(self, event):
         self.begin = event.pos()
         self.end = event.pos()
-
+        
         # Add end position only if starting position present
         if len(rect1)>0:
             rect2.append(event.pos())
         self.update()
-        for i in range(0, len(rect1)):
-            print("Starting Coordinates: X = %d Y=%d"%(rect1[i].x(), rect1[i].y()))
-            print("Ending Coordinates: X = %d Y=%d"%(rect2[i].x(), rect2[i].y()))
+        
+        #print("Starting Coordinates: X = %d Y=%d"%(rect1[-1].x(), rect1[-1].y()))
+        #print("Ending Coordinates: X = %d Y=%d"%(rect2[-1].x(), rect2[-1].y()))
+        coord = [rect1[-1].x(), rect1[-1].y(), rect2[-1].x(), rect2[-1].y()]
+        self.signals['coord2table'].emit(coord)
 
 
     def paintEvent(self, event):
