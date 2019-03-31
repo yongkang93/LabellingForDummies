@@ -4,8 +4,16 @@ from PyQt5.QtWidgets import *
 
 
 class LFDSignals(QObject):
-    csv2table                      = pyqtSignal(str)
+    ''' LFDTable Signals '''
+    updateImageCoordinates         = pyqtSignal(list)
+
+
+    ''' LFDFileList Signals '''
     setActiveImageOnTable          = pyqtSignal(str)
     setActiveImageOnImagePanel     = pyqtSignal(str)
 
-    coord2table                    = pyqtSignal(list)
+
+    ''' LFDImagePanel Signals '''
+    deleteTableCoordinates         = pyqtSignal(int)
+    retrieveImageCoordinates       = pyqtSignal(str)
+    append2table                   = pyqtSignal(list)

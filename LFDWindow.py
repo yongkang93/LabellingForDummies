@@ -47,7 +47,9 @@ class LFDWindow(QMainWindow):
         menuBar = self.menuBar()
         if sys.platform != 'darwin':
             menuBar.setNativeMenuBar(False)
+
         file_menu = menuBar.addMenu('&File')
+        edit_menu = menuBar.addMenu('&Edit')
 
         ''' creating and connecting buttons with functions '''
         sample_action = QAction('&Sample Button 01', self)
@@ -78,7 +80,15 @@ class LFDWindow(QMainWindow):
         open_directory_action.setShortcut('Ctrl+D')
         open_directory_action.triggered.connect(self.openImageDirectory)
 
-        ''' formatting layout of menu buttons '''
+        undo_action = QAction('&Undo', self)
+        undo_action.setShortcut('Ctrl+Z')
+        undo_action.triggered.connect(self.undo)
+
+        redo_action = QAction('&Redo', self)
+        redo_action.setShortcut('Shift+Ctrl+Z')
+        redo_action.triggered.connect(self.redo)
+
+        ''' formatting layout of file buttons '''
         file_menu.addAction(sample_action)
         file_menu.addSeparator()
         file_menu.addAction(new_csv_action)
@@ -89,6 +99,11 @@ class LFDWindow(QMainWindow):
         file_menu.addSeparator()
         file_menu.addAction(open_image_action)
         file_menu.addAction(open_directory_action)
+
+        ''' formatting layout of edit buttons '''
+        edit_menu.addAction(undo_action)
+        edit_menu.addAction(redo_action)
+        edit_menu.addSeparator()
 
 
     def initializeDockable(self):
@@ -115,18 +130,33 @@ class LFDWindow(QMainWindow):
     def initializeCommunication(self):
         self.signals = LFDSignals()
 
-        ''' self.signals.<LFDSignal VARIABLE>[FUNC INPUT TYPE].connect(self.<LFDTable/FileList/ImagePanel>.FUNC) '''
-        self.signals.setActiveImageOnTable[str].connect(self.tableWidget.setImage)
+        ''' LFDTable Signals '''
+        self.signals.updateImageCoordinates[list].connect(self.imageWidget.updateImageCoordinates)
+        self.tableWidget.addSignal([('updateImageCoordinates', self.signals.updateImageCoordinates)])
+
+
+        ''' LFDFileList Signals '''
+        self.signals.setActiveImageOnTable[str].connect(self.tableWidget.setActiveImageOnTable)
         self.listWidget.addSignal([('setActiveImageOnTable', self.signals.setActiveImageOnTable)])
 
-        self.signals.setActiveImageOnImagePanel[str].connect(self.imageWidget.setImage)
+        self.signals.setActiveImageOnImagePanel[str].connect(self.imageWidget.setActiveImageOnImagePanel)
         self.listWidget.addSignal([('setActiveImageOnImagePanel', self.signals.setActiveImageOnImagePanel)])
 
-        self.signals.coord2table[list].connect(self.tableWidget.append2Table)
-        self.imageWidget.addSignal([('coord2table', self.signals.coord2table)])
 
-        self.listWidget.currentItemChanged.connect(self.tableWidget.setImage)
-        self.listWidget.currentItemChanged.connect(self.imageWidget.setImage)
+        ''' LFDImagePanel Signals '''
+        self.signals.deleteTableCoordinates[int].connect(self.tableWidget.deleteTableCoordinates)
+        self.imageWidget.addSignal([('deleteTableCoordinates', self.signals.deleteTableCoordinates)])
+
+        self.signals.retrieveImageCoordinates[str].connect(self.tableWidget.retrieveImageCoordinates)
+        self.imageWidget.addSignal([('retrieveImageCoordinates', self.signals.retrieveImageCoordinates)])
+
+        self.signals.append2table[list].connect(self.tableWidget.append2table)
+        self.imageWidget.addSignal([('append2table', self.signals.append2table)])
+
+
+        ''' PyQt5 Built-In Signals '''
+        self.listWidget.currentItemChanged.connect(self.tableWidget.setActiveImageOnTable)
+        self.listWidget.currentItemChanged.connect(self.imageWidget.setActiveImageOnImagePanel)
 
 
     def sampleButton01Action(self):
@@ -155,6 +185,22 @@ class LFDWindow(QMainWindow):
 
     def openImageDirectory(self):
         print('openImageDirectory')
+
+
+    def undo(self):
+        self.tableWidget.undo()
+
+
+    def redo(self):
+        self.tableWidget.redo()
+
+
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_Up:
+            self.listWidget.setSelectedItem('UP')
+        
+        if event.key() == Qt.Key_Down:
+            self.listWidget.setSelectedItem('DOWN')
 
 
 app = QApplication(sys.argv)

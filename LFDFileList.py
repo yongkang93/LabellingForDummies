@@ -25,6 +25,9 @@ class LFDFileList(QListWidget):
                       None, "QFileDialog.getOpenFileName()", "",
                       "All Files (*);;Python Files (*.py)", options=options)
 
+        if imageName is '':
+            return
+
         ''' prevent displaying of duplicate items '''
         if imageName not in self.fileList:
             self.addItem(imageName)
@@ -36,3 +39,22 @@ class LFDFileList(QListWidget):
 
         self.signals['setActiveImageOnTable'].emit(imageName)
         self.signals['setActiveImageOnImagePanel'].emit(imageName)
+
+
+    def setSelectedItem(self, direction):
+        if len(self.fileList) is 0:
+            return
+
+        if direction is 'UP':
+            currentSelection = self.currentItem()
+            itemIndex = self.fileList.index(currentSelection.text())
+            if itemIndex is not 0:
+                itemIndex -= 1
+                self.setCurrentRow(itemIndex)
+
+        if direction is 'DOWN':
+            currentSelection = self.currentItem()
+            itemIndex = self.fileList.index(currentSelection.text())
+            if itemIndex is not len(self.fileList) - 1:
+                itemIndex += 1
+                self.setCurrentRow(itemIndex)

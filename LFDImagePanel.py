@@ -1,102 +1,158 @@
-from PyQt5.QtWidgets import QWidget, QFileDialog, QPushButton, QMainWindow, QAction, qApp, QApplication
-from PyQt5.QtGui import QIcon, QPixmap
-import sys
-from PyQt5 import QtWidgets, QtCore, QtGui
+import os
 
-rect1 = []   # Start position of label
-rect2 = []   # End position of label
+from PyQt5.QtGui     import *
+from PyQt5.QtCore    import *
+from PyQt5.QtWidgets import *
+
 
 class LFDImagePanel(QWidget):
     def __init__(self):
         super().__init__()
 
-        self.filename = None
-        self.signals  = {}
+        self.startPoint           = QPoint()
+        self.endPoint             = QPoint()
 
-        self.begin    = QtCore.QPoint()
-        self.end      = QtCore.QPoint()
+        self.currentImage         = None
+        self.currentImageName     = None
+        self.currentImageWidth    = None
+        self.currentImageHeight   = None
+
+        self.isDeleting           = False
+        self.isDrawing            = False
+
+        self.startRelativeCoords  = []
+        self.endRelativeCoords    = []
+        self.signals              = {}
 
 
     def addSignal(self, signal):
         self.signals.update(signal)
 
 
-    def setImage(self, imageName):
+    def setActiveImageOnImagePanel(self, imageName):
         if type(imageName) is str:
-            self.filename = imageName
+            self.currentImageName = imageName
         else:
-            self.filename = imageName.text()
+            self.currentImageName = imageName.text()
+        
+        self.currentImage       = QPixmap(self.currentImageName)
+        self.currentImageWidth  = self.currentImage.size().width()
+        self.currentImageHeight = self.currentImage.size().height()
+
+        imageName = os.path.split(self.currentImageName)[1]
+        self.signals['retrieveImageCoordinates'].emit(imageName)
+        self.update()
+
+
+    def updateImageCoordinates(self, coords):
+        self.startRelativeCoords.clear()
+        self.endRelativeCoords.clear()
+
+        for i in range(len(coords)):
+            startWindowCoordX = (coords[i][0] / self.currentImageWidth)
+            startWindowCoordY = (coords[i][1] / self.currentImageHeight)
+            endWindowCoordX   = (coords[i][2] / self.currentImageWidth)
+            endWindowCoordY   = (coords[i][3] / self.currentImageHeight)
+
+            self.startRelativeCoords.append([startWindowCoordX, startWindowCoordY])
+            self.endRelativeCoords.append([endWindowCoordX, endWindowCoordY])
 
         self.update()
 
 
-    # Get initial position
     def mousePressEvent(self, event):
-        self.setFocus()
-        w = self.geometry().width()
-        h = self.geometry().height()
+        if self.currentImage is None:
+            return
 
-        self.begin = event.pos()
-        self.end = event.pos()
+        self.isDrawing  = True
+        self.startPoint = event.pos()
+        self.endPoint   = event.pos()
 
-        # Add position if list is empty
-        if (len(rect1)<=0):
-            rect1.append(event.pos())
+        startPointX = self.startPoint.x() / self.geometry().width()
+        startPointY = self.startPoint.y() / self.geometry().height()
+
+        if self.isDeleting is True:
+            for i in range(len(self.startRelativeCoords)):
+                xCoords = sorted([(self.startRelativeCoords[i][0]),
+                                  (self.endRelativeCoords[i][0])])
+                yCoords = sorted([(self.startRelativeCoords[i][1]),
+                                  (self.endRelativeCoords[i][1])])
+
+                if (xCoords[0] < startPointX < xCoords[1]) and \
+                   (yCoords[0] < startPointY < yCoords[1]) and self.isDeleting == True:
+                    self.startRelativeCoords.pop(i)
+                    self.endRelativeCoords.pop(i)
+
+                    self.signals['deleteTableCoordinates'].emit(i)
+                    return
         else:
-            removed_file = False
-            for i in range(0, len(rect1)):
-                # Check if the place you click is inside the labelled rectangle
-
-                """BUG HERE, STARTING POSITION MAYBE BIGGER THAN ENDING POSTION"""
-                if (rect1[i].x() < event.pos().x() < rect2[i].x()) and (rect1[i].y() < event.pos().y() < rect2[i].y()):
-                    # Remove entry if in labelled rectangle
-                    rect1.pop(i)
-                    rect2.pop(i)
-                    removed_file = True
-                    break
-
-            # Add starting position of label
-            if not removed_file:
-                rect1.append(event.pos())
+            self.startRelativeCoords.append([startPointX, startPointY])
 
         self.update()
 
 
     def mouseMoveEvent(self, event):
-        self.end = event.pos()
+        if self.currentImage is None:
+            return
+
+        self.setFocus()
+        self.endPoint = event.pos()
         self.update()
 
 
-   #Get end position
     def mouseReleaseEvent(self, event):
-        self.begin = event.pos()
-        self.end = event.pos()
-        
-        # Add end position only if starting position present
-        if len(rect1)>0:
-            rect2.append(event.pos())
+        if self.currentImage is None:
+            return
+
+        self.isDrawing  = False
+        self.startPoint = event.pos()
+        self.endPoint   = event.pos()
+
+        endPointX = self.endPoint.x() / self.geometry().width()
+        endPointY = self.endPoint.y() / self.geometry().height()
+
+        if len(self.startRelativeCoords) > len(self.endRelativeCoords):
+            self.endRelativeCoords.append([endPointX,endPointY])
+
+        if self.isDeleting is False:
+            coords = [int(self.startRelativeCoords[-1][0] * self.currentImageWidth) ,
+                      int(self.startRelativeCoords[-1][1] * self.currentImageHeight),
+                      int(self.endRelativeCoords[-1][0]   * self.currentImageWidth) ,
+                      int(self.endRelativeCoords[-1][1]   * self.currentImageHeight)]
+
+            self.signals['append2table'].emit(coords)
+
         self.update()
-        
-        #print("Starting Coordinates: X = %d Y=%d"%(rect1[-1].x(), rect1[-1].y()))
-        #print("Ending Coordinates: X = %d Y=%d"%(rect2[-1].x(), rect2[-1].y()))
-        coord = [rect1[-1].x(), rect1[-1].y(), rect2[-1].x(), rect2[-1].y()]
-        self.signals['coord2table'].emit(coord)
+
+
+    def keyPressEvent(self, event):
+        if Qt.ShiftModifier and event.key() == Qt.Key_D:
+            self.isDeleting = True
+
+
+    def keyReleaseEvent(self, event):
+        if Qt.ShiftModifier and event.key() == Qt.Key_D:
+            self.isDeleting = False
 
 
     def paintEvent(self, event):
-        qp = QtGui.QPainter(self)
-        
-        #get image
-        pixmap = QPixmap(self.filename)
-        qp.drawPixmap(self.rect(), pixmap)
+        if self.currentImage is None:
+            return
 
-        #brush colour
-        br = QtGui.QBrush(QtGui.QColor(100, 10, 10, 40))
-        qp.setBrush(br)
+        qPainter = QPainter(self)
+        qBrush   = QBrush(QColor(100, 10, 10, 40))
 
-        qp.drawRect(QtCore.QRect(self.begin, self.end))
+        qPainter.drawPixmap(self.rect(), self.currentImage)
+        qPainter.setBrush(qBrush)
 
-        #Draw a permanent rectangle on canvas that you paint/drag
-        for i in range(0,len(rect1)):
-            if len(rect2) > i:
-                qp.drawRect(rect1[i].x(),rect1[i].y(),rect2[i].x()-rect1[i].x(),rect2[i].y()-rect1[i].y())
+        if self.isDrawing is True:
+            qPainter.drawRect(QRect(self.startPoint, self.endPoint))
+
+        for i in range(len(self.startRelativeCoords)):
+            if len(self.endRelativeCoords) > i:
+                qPainter.drawRect(self.startRelativeCoords[i][0] * self.geometry().width(),
+                            self.startRelativeCoords[i][1] * self.geometry().height(),
+                            (self.endRelativeCoords[i][0]  - self.startRelativeCoords[i][0]) *
+                            self.geometry().width(),
+                            (self.endRelativeCoords[i][1]  - self.startRelativeCoords[i][1]) *
+                            self.geometry().height())
