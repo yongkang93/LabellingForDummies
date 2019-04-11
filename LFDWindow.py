@@ -164,19 +164,19 @@ class LFDWindow(QMainWindow):
 
 
     def newCSV(self):
-        print('newCSV')
+        self.tableWidget.newCSV()
 
 
     def openCSV(self):
-        print('openCSV')
+        self.tableWidget.openCSV()
 
 
     def saveCSV(self):
-        print('saveCSV')
+        self.tableWidget.saveCSV()
 
 
     def saveCSVas(self):
-        print('saveCSVas')
+        self.tableWidget.saveCSVas()
 
 
     def openImage(self):
@@ -184,7 +184,8 @@ class LFDWindow(QMainWindow):
 
 
     def openImageDirectory(self):
-        print('openImageDirectory')
+        #print('openImageDirectory')
+        self.listWidget.openImageDirectory()
 
 
     def undo(self):

@@ -1,3 +1,4 @@
+import os
 import sys 
 
 from PyQt5.QtGui     import *
@@ -9,6 +10,7 @@ class LFDFileList(QListWidget):
     def __init__(self):
         super().__init__()
         
+        self.imageDirectory = None
         self.fileList = []
         self.signals  = {}
 
@@ -21,24 +23,50 @@ class LFDFileList(QListWidget):
         options = QFileDialog.Options()
         #if sys.platform != 'darwin': 
         #    options |= QFileDialog.DontUseNativeDialog
-        imageName, _ = QFileDialog.getOpenFileName(
-                      None, "QFileDialog.getOpenFileName()", "",
-                      "All Files (*);;Python Files (*.py)", options=options)
+        fullImageName, _ = QFileDialog.getOpenFileName(
+                       None, 'Open Image', '',
+                       'JPEG Files (*.jpg);;PNG Files (*.png)',
+                       options=options)
 
-        if imageName is '':
+        # return if user closes the file dialog without selecting an image
+        if fullImageName is '':
             return
 
-        ''' prevent displaying of duplicate items '''
+        self.insertEntry(fullImageName)
+
+        self.signals['setActiveImageOnTable'].emit(fullImageName)
+        self.signals['setActiveImageOnImagePanel'].emit(fullImageName)
+
+
+    def openImageDirectory(self):
+        self.imageDirectory = QFileDialog.getExistingDirectory(
+                              None, 'Select Image Folder', '', 
+                              QFileDialog.ShowDirsOnly)
+
+        if self.imageDirectory is '':
+            return
+
+        self.get_images(self.imageDirectory)
+
+
+    def get_images(self, path):
+        accepted_format = ['.jpg', 'jpeg', '.png']
+
+        for file in os.listdir(path):
+            fullImageName = os.path.join(path, file)
+            if os.path.splitext(fullImageName)[1] in accepted_format:
+                self.insertEntry(fullImageName)
+
+
+    def insertEntry(self, imageName):
+        # prevent displaying of duplicate items
         if imageName not in self.fileList:
             self.addItem(imageName)
             self.setCurrentRow(len(self.fileList))
             self.fileList.append(imageName)
         else:
             itemIndex = self.fileList.index(imageName)
-            self.setCurrentRow(itemIndex)
-
-        self.signals['setActiveImageOnTable'].emit(imageName)
-        self.signals['setActiveImageOnImagePanel'].emit(imageName)
+            self.setCurrentRow(itemIndex) 
 
 
     def setSelectedItem(self, direction):
@@ -46,6 +74,7 @@ class LFDFileList(QListWidget):
             return
 
         if direction is 'UP':
+            print('LFDFileList Print: UP')
             currentSelection = self.currentItem()
             itemIndex = self.fileList.index(currentSelection.text())
             if itemIndex is not 0:
@@ -53,6 +82,7 @@ class LFDFileList(QListWidget):
                 self.setCurrentRow(itemIndex)
 
         if direction is 'DOWN':
+            print('LFDFileList Print: DOWN')
             currentSelection = self.currentItem()
             itemIndex = self.fileList.index(currentSelection.text())
             if itemIndex is not len(self.fileList) - 1:

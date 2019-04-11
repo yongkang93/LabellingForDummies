@@ -17,8 +17,12 @@ class LFDImagePanel(QWidget):
         self.currentImageWidth    = None
         self.currentImageHeight   = None
 
+        # TODO: (High Priority)
+        # change to state design pattern
+        # (i.e. self.states = self.LFDStates(1))
         self.isDeleting           = False
         self.isDrawing            = False
+
 
         self.startRelativeCoords  = []
         self.endRelativeCoords    = []
@@ -126,12 +130,12 @@ class LFDImagePanel(QWidget):
 
 
     def keyPressEvent(self, event):
-        if Qt.ShiftModifier and event.key() == Qt.Key_D:
+        if event.modifiers() == Qt.ShiftModifier and event.key() == Qt.Key_D:
             self.isDeleting = True
 
 
     def keyReleaseEvent(self, event):
-        if Qt.ShiftModifier and event.key() == Qt.Key_D:
+        if event.modifiers() != Qt.ShiftModifier or event.key() == Qt.Key_D:
             self.isDeleting = False
 
 
@@ -151,8 +155,8 @@ class LFDImagePanel(QWidget):
         for i in range(len(self.startRelativeCoords)):
             if len(self.endRelativeCoords) > i:
                 qPainter.drawRect(self.startRelativeCoords[i][0] * self.geometry().width(),
-                            self.startRelativeCoords[i][1] * self.geometry().height(),
-                            (self.endRelativeCoords[i][0]  - self.startRelativeCoords[i][0]) *
-                            self.geometry().width(),
-                            (self.endRelativeCoords[i][1]  - self.startRelativeCoords[i][1]) *
-                            self.geometry().height())
+                                  self.startRelativeCoords[i][1] * self.geometry().height(),
+                                  (self.endRelativeCoords[i][0]  - self.startRelativeCoords[i][0]) *
+                                  self.geometry().width(),
+                                  (self.endRelativeCoords[i][1]  - self.startRelativeCoords[i][1]) *
+                                  self.geometry().height())
