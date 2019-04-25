@@ -1,5 +1,5 @@
 import os
-import modin.pandas as pd
+import pandas as pd
 
 from PyQt5.QtGui     import *
 from PyQt5.QtCore    import *
@@ -15,7 +15,29 @@ class LFDTable(QTableWidget):
         self.tableBuffer      = {}
         self.signals          = {}
 
-        #self.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.initialize()
+
+
+    def initialize(self):
+        imageItem = QTableWidgetItem('image')
+        imageItem.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
+        xMinItem = QTableWidgetItem('xMin')
+        xMinItem.setFlags(Qt.ItemIsSelectable  | Qt.ItemIsEnabled)
+        yMinItem = QTableWidgetItem('yMin')
+        yMinItem.setFlags(Qt.ItemIsSelectable  | Qt.ItemIsEnabled)
+        xMaxItem = QTableWidgetItem('xMax')
+        xMaxItem.setFlags(Qt.ItemIsSelectable  | Qt.ItemIsEnabled)
+        yMaxItem = QTableWidgetItem('yMax')
+        yMaxItem.setFlags(Qt.ItemIsSelectable  | Qt.ItemIsEnabled)
+        labelItem = QTableWidgetItem('label')
+        labelItem.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
+
+        self.setItem(0, 0, imageItem)
+        self.setItem(0, 1, xMinItem)
+        self.setItem(0, 2, yMinItem)
+        self.setItem(0, 3, xMaxItem)
+        self.setItem(0, 4, yMaxItem)
+        self.setItem(0, 5, labelItem)
 
 
     def addSignal(self, signal):
@@ -93,8 +115,7 @@ class LFDTable(QTableWidget):
 
             entries.append(entry)
 
-        df = pd.DataFrame.from_records(entries)
-        df.columns = labels
+        df = pd.DataFrame.from_records(entries, columns=labels)
         df.to_csv(self.csvName)
 
 
@@ -115,7 +136,11 @@ class LFDTable(QTableWidget):
             coords.append(entry[i])
             attribute = str(entry[i])
             item = QTableWidgetItem(attribute)
-            item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
+
+            # disable editing of cell for everything except label column
+            if i is not len(entry) - 1:
+                item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
+
             self.setItem(currentRowCount, i, item)
 
         imageName = entry[0]

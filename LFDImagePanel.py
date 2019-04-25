@@ -17,6 +17,8 @@ class LFDImagePanel(QWidget):
         self.currentImageWidth    = None
         self.currentImageHeight   = None
 
+        self.currentLabelState    = None
+
         # TODO: (High Priority)
         # change to state design pattern
         # (i.e. self.states = self.LFDStates(1))
@@ -26,6 +28,8 @@ class LFDImagePanel(QWidget):
 
         self.startRelativeCoords  = []
         self.endRelativeCoords    = []
+
+        self.keybinds             = {}
         self.signals              = {}
 
 
@@ -64,6 +68,10 @@ class LFDImagePanel(QWidget):
         self.update()
 
 
+    def updateLabelKeybinds(self, keybinds):
+        self.keybinds = keybinds
+
+
     def mousePressEvent(self, event):
         if self.currentImage is None:
             return
@@ -84,11 +92,11 @@ class LFDImagePanel(QWidget):
 
                 if (xCoords[0] < startPointX < xCoords[1]) and \
                    (yCoords[0] < startPointY < yCoords[1]) and self.isDeleting == True:
-                    self.startRelativeCoords.pop(i)
-                    self.endRelativeCoords.pop(i)
+                   self.startRelativeCoords.pop(i)
+                   self.endRelativeCoords.pop(i)
 
-                    self.signals['deleteTableCoordinates'].emit(i)
-                    return
+                   self.signals['deleteTableCoordinates'].emit(i)
+                   return
         else:
             self.startRelativeCoords.append([startPointX, startPointY])
 
@@ -119,10 +127,23 @@ class LFDImagePanel(QWidget):
             self.endRelativeCoords.append([endPointX,endPointY])
 
         if self.isDeleting is False:
-            coords = [int(self.startRelativeCoords[-1][0] * self.currentImageWidth) ,
-                      int(self.startRelativeCoords[-1][1] * self.currentImageHeight),
-                      int(self.endRelativeCoords[-1][0]   * self.currentImageWidth) ,
-                      int(self.endRelativeCoords[-1][1]   * self.currentImageHeight)]
+            # sort the coordinate s.t. it is arranged as xMin, xMax, yMin, yMax
+            xCoords = sorted([(self.startRelativeCoords[-1][0]),
+                                  (self.endRelativeCoords[-1][0])])
+            yCoords = sorted([(self.startRelativeCoords[-1][1]),
+                                  (self.endRelativeCoords[-1][1])])
+
+            if self.currentLabelState is None:
+                coords = [int(xCoords[0] * self.currentImageWidth) ,
+                          int(yCoords[0] * self.currentImageHeight),
+                          int(xCoords[1] * self.currentImageWidth) ,
+                          int(yCoords[1] * self.currentImageHeight), '']
+            else:
+                coords = [int(xCoords[0] * self.currentImageWidth) ,
+                          int(yCoords[0] * self.currentImageHeight),
+                          int(xCoords[1] * self.currentImageWidth) ,
+                          int(yCoords[1] * self.currentImageHeight),
+                          str(self.keybinds[str(self.currentLabelState)].text())]
 
             self.signals['append2table'].emit(coords)
 
@@ -132,6 +153,27 @@ class LFDImagePanel(QWidget):
     def keyPressEvent(self, event):
         if event.modifiers() == Qt.ShiftModifier and event.key() == Qt.Key_D:
             self.isDeleting = True
+
+        if event.key() == Qt.Key_1:
+            self.currentLabelState = 1
+        elif event.key() == Qt.Key_2:
+            self.currentLabelState = 2
+        elif event.key() == Qt.Key_3:
+            self.currentLabelState = 3
+        elif event.key() == Qt.Key_4:
+            self.currentLabelState = 4
+        elif event.key() == Qt.Key_5:
+            self.currentLabelState = 5
+        elif event.key() == Qt.Key_6:
+            self.currentLabelState = 6
+        elif event.key() == Qt.Key_7:
+            self.currentLabelState = 7
+        elif event.key() == Qt.Key_8:
+            self.currentLabelState = 8
+        elif event.key() == Qt.Key_9:
+            self.currentLabelState = 9
+        elif event.key() == Qt.Key_0:
+            self.currentLabelState = 0
 
 
     def keyReleaseEvent(self, event):
