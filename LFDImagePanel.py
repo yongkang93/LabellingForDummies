@@ -9,6 +9,9 @@ class LFDImagePanel(QWidget):
     def __init__(self):
         super().__init__()
 
+        self.XMIN = 5
+        self.YMIN = 5
+
         self.startPoint           = QPoint()
         self.endPoint             = QPoint()
 
@@ -42,7 +45,7 @@ class LFDImagePanel(QWidget):
             self.currentImageName = imageName
         else:
             self.currentImageName = imageName.text()
-        
+
         self.currentImage       = QPixmap(self.currentImageName)
         self.currentImageWidth  = self.currentImage.size().width()
         self.currentImageHeight = self.currentImage.size().height()
@@ -72,6 +75,10 @@ class LFDImagePanel(QWidget):
         self.keybinds = keybinds
 
 
+    def setActiveLabelState(self, state):
+        self.currentLabelState = state
+
+
     def mousePressEvent(self, event):
         if self.currentImage is None:
             return
@@ -90,6 +97,7 @@ class LFDImagePanel(QWidget):
                 yCoords = sorted([(self.startRelativeCoords[i][1]),
                                   (self.endRelativeCoords[i][1])])
 
+                # verify if clicked position is within a bounding box
                 if (xCoords[0] < startPointX < xCoords[1]) and \
                    (yCoords[0] < startPointY < yCoords[1]) and self.isDeleting == True:
                    self.startRelativeCoords.pop(i)
@@ -114,6 +122,13 @@ class LFDImagePanel(QWidget):
 
     def mouseReleaseEvent(self, event):
         if self.currentImage is None:
+            return
+
+        # reject drawing of bounding boxes that are too small
+        if self.isDeleting is False and \
+           (abs(event.pos().x() - self.startPoint.x()) <= self.XMIN or \
+            abs(event.pos().y() - self.startPoint.y()) <= self.YMIN):
+            self.startRelativeCoords.pop()
             return
 
         self.isDrawing  = False
@@ -191,8 +206,12 @@ class LFDImagePanel(QWidget):
         qPainter.drawPixmap(self.rect(), self.currentImage)
         qPainter.setBrush(qBrush)
 
-        if self.isDrawing is True:
-            qPainter.drawRect(QRect(self.startPoint, self.endPoint))
+
+        # reject drawing of bounding boxes that are too small
+        if self.isDrawing is True and \
+           abs(self.endPoint.x() - self.startPoint.x()) > self.XMIN and \
+           abs(self.endPoint.y() - self.startPoint.y()) > self.YMIN:
+                qPainter.drawRect(QRect(self.startPoint, self.endPoint))
 
         for i in range(len(self.startRelativeCoords)):
             if len(self.endRelativeCoords) > i:

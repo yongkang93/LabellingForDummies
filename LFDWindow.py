@@ -14,7 +14,7 @@ from LFDSignals       import LFDSignals
 class LFDWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        
+
         self.mainWindow    = None
 
         self.tableDock     = None
@@ -78,7 +78,7 @@ class LFDWindow(QMainWindow):
         save_csv_as_action = QAction('&Save CSV as...', self)
         save_csv_as_action.setShortcut('Shift+Ctrl+S')
         save_csv_as_action.triggered.connect(self.saveCSVas)
-        
+
         open_image_action = QAction('&Open Image', self)
         open_image_action.setShortcut('Ctrl+I')
         open_image_action.triggered.connect(self.openImage)
@@ -121,7 +121,7 @@ class LFDWindow(QMainWindow):
     def initializeDockable(self):
         ''' creating widget objects '''
         self.tableWidget = LFDTable()
-        self.listWidget  = LFDFileList() 
+        self.listWidget  = LFDFileList()
 
         ''' creating and setting dockable windows with widget '''
         self.tableDock = QDockWidget('LFD Table', self)
@@ -146,6 +146,9 @@ class LFDWindow(QMainWindow):
         self.signals.updateImageCoordinates[list].connect(self.imageWidget.updateImageCoordinates)
         self.tableWidget.addSignal([('updateImageCoordinates', self.signals.updateImageCoordinates)])
 
+        self.signals.setActiveLabelState[int].connect(self.imageWidget.setActiveLabelState)
+        self.tableWidget.addSignal([('setActiveLabelState', self.signals.setActiveLabelState)])
+
 
         ''' LFDFileList Signals '''
         self.signals.setActiveImageOnTable[str].connect(self.tableWidget.setActiveImageOnTable)
@@ -153,6 +156,9 @@ class LFDWindow(QMainWindow):
 
         self.signals.setActiveImageOnImagePanel[str].connect(self.imageWidget.setActiveImageOnImagePanel)
         self.listWidget.addSignal([('setActiveImageOnImagePanel', self.signals.setActiveImageOnImagePanel)])
+
+        self.signals.setActiveLabelState[int].connect(self.imageWidget.setActiveLabelState)
+        self.listWidget.addSignal([('setActiveLabelState', self.signals.setActiveLabelState)])
 
 
         ''' LFDImagePanel Signals '''
@@ -218,45 +224,6 @@ class LFDWindow(QMainWindow):
 
     def openKeybinding(self):
         self.keybindWindow.show()
-
-
-    def keyPressEvent(self, event):
-        if event.key() == Qt.Key_1:
-            self.currentLabelState = 1
-            print('1')
-        elif event.key() == Qt.Key_2:
-            self.currentLabelState = 2
-            print('2')
-        elif event.key() == Qt.Key_3:
-            self.currentLabelState = 3
-            print('3')
-        elif event.key() == Qt.Key_4:
-            self.currentLabelState = 4
-            print('4')
-        elif event.key() == Qt.Key_5:
-            self.currentLabelState = 5
-            print('5')
-        elif event.key() == Qt.Key_6:
-            self.currentLabelState = 6
-            print('6')
-        elif event.key() == Qt.Key_7:
-            self.currentLabelState = 7
-            print('7')
-        elif event.key() == Qt.Key_8:
-            self.currentLabelState = 8
-            print('8')
-        elif event.key() == Qt.Key_9:
-            self.currentLabelState = 9
-            print('9')
-        elif event.key() == Qt.Key_0:
-            self.currentLabelState = 0
-            print('0')
-
-        #if event.key() == Qt.Key_Up:
-        #    self.listWidget.setSelectedItem('UP')
-        
-        #if event.key() == Qt.Key_Down:
-        #    self.listWidget.setSelectedItem('DOWN')
 
 
 app = QApplication(sys.argv)

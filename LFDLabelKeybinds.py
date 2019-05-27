@@ -29,6 +29,7 @@ class LFDLabelKeybinds(QWidget):
 
 
     def lateInitialize(self):
+        # emit signal only after all dockable windows are initialized
         self.signals['updateLabelKeybinds'].emit(self.keybinds)
 
 
@@ -37,4 +38,5 @@ class LFDLabelKeybinds(QWidget):
 
 
     def updateLabelKeybind(self, label):
+        # notify the changes to LFDImagePanel
        self.signals['updateLabelKeybinds'].emit(self.keybinds)

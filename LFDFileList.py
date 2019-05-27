@@ -1,5 +1,5 @@
 import os
-import sys 
+import sys
 
 from PyQt5.QtGui     import *
 from PyQt5.QtCore    import *
@@ -9,7 +9,7 @@ from PyQt5.QtWidgets import *
 class LFDFileList(QListWidget):
     def __init__(self):
         super().__init__()
-        
+
         self.imageDirectory = None
         self.fileList = []
         self.signals  = {}
@@ -21,7 +21,7 @@ class LFDFileList(QListWidget):
 
     def openImage(self):
         options = QFileDialog.Options()
-        #if sys.platform != 'darwin': 
+        #if sys.platform != 'darwin':
         #    options |= QFileDialog.DontUseNativeDialog
         fullImageName, _ = QFileDialog.getOpenFileName(
                        None, 'Open Image', '',
@@ -40,7 +40,7 @@ class LFDFileList(QListWidget):
 
     def openImageDirectory(self):
         self.imageDirectory = QFileDialog.getExistingDirectory(
-                              None, 'Select Image Folder', '', 
+                              None, 'Select Image Folder', '',
                               QFileDialog.ShowDirsOnly)
 
         if self.imageDirectory is '':
@@ -55,18 +55,21 @@ class LFDFileList(QListWidget):
         for file in os.listdir(path):
             fullImageName = os.path.join(path, file)
             if os.path.splitext(fullImageName)[1] in accepted_format:
-                self.insertEntry(fullImageName)
+                self.insertEntry(fullImageName, False)
 
 
-    def insertEntry(self, imageName):
+    def insertEntry(self, imageName, setCurrentRow = True):
         # prevent displaying of duplicate items
         if imageName not in self.fileList:
             self.addItem(imageName)
-            self.setCurrentRow(len(self.fileList))
+
+            if setCurrentRow is True:
+                self.setCurrentRow(len(self.fileList))
+
             self.fileList.append(imageName)
         else:
             itemIndex = self.fileList.index(imageName)
-            self.setCurrentRow(itemIndex) 
+            self.setCurrentRow(itemIndex)
 
 
     def setSelectedItem(self, direction):
@@ -88,3 +91,36 @@ class LFDFileList(QListWidget):
             if itemIndex is not len(self.fileList) - 1:
                 itemIndex += 1
                 self.setCurrentRow(itemIndex)
+
+
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_1:
+            self.currentLabelState = 1
+            self.signals['setActiveLabelState'].emit(self.currentLabelState)
+        elif event.key() == Qt.Key_2:
+            self.currentLabelState = 2
+            self.signals['setActiveLabelState'].emit(self.currentLabelState)
+        elif event.key() == Qt.Key_3:
+            self.currentLabelState = 3
+            self.signals['setActiveLabelState'].emit(self.currentLabelState)
+        elif event.key() == Qt.Key_4:
+            self.currentLabelState = 4
+            self.signals['setActiveLabelState'].emit(self.currentLabelState)
+        elif event.key() == Qt.Key_5:
+            self.currentLabelState = 5
+            self.signals['setActiveLabelState'].emit(self.currentLabelState)
+        elif event.key() == Qt.Key_6:
+            self.currentLabelState = 6
+            self.signals['setActiveLabelState'].emit(self.currentLabelState)
+        elif event.key() == Qt.Key_7:
+            self.currentLabelState = 7
+            self.signals['setActiveLabelState'].emit(self.currentLabelState)
+        elif event.key() == Qt.Key_8:
+            self.currentLabelState = 8
+            self.signals['setActiveLabelState'].emit(self.currentLabelState)
+        elif event.key() == Qt.Key_9:
+            self.currentLabelState = 9
+            self.signals['setActiveLabelState'].emit(self.currentLabelState)
+        elif event.key() == Qt.Key_0:
+            self.currentLabelState = 0
+            self.signals['setActiveLabelState'].emit(self.currentLabelState)

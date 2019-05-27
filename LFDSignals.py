@@ -19,5 +19,9 @@ class LFDSignals(QObject):
     append2table                   = pyqtSignal(list)
 
 
+    ''' LFDTable & LFDFileList Signals '''
+    setActiveLabelState            = pyqtSignal(int)
+
+
     ''' LFDLabelKeybind Signals '''
     updateLabelKeybinds            = pyqtSignal(dict)

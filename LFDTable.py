@@ -71,14 +71,16 @@ class LFDTable(QTableWidget):
         if self.csvName is '':
             return
 
-        df = pd.read_csv(self.csvName, index_col = 0)
+        #df = pd.read_csv(self.csvName, index_col = 0)
+        df = pd.read_csv(self.csvName)
         for index, row in df.iterrows():
             entry = list(row)
             self.insertEntry(entry)
 
 
     def saveCSV(self):
-        if self.csvName is None:
+        # if there is no selected csv file to save to
+        if self.csvName is None or self.csvName is '':
             self.saveCSVas()
         else:
             self.save()
@@ -86,6 +88,11 @@ class LFDTable(QTableWidget):
 
     def saveCSVas(self):
         self.newCSV()
+
+        # if there is no selected csv file to save to
+        if self.csvName is None or self.csvName is '':
+            return
+
         self.save()
 
 
@@ -116,6 +123,7 @@ class LFDTable(QTableWidget):
             entries.append(entry)
 
         df = pd.DataFrame.from_records(entries, columns=labels)
+        df = df.set_index('image')
         df.to_csv(self.csvName)
 
 
@@ -160,6 +168,8 @@ class LFDTable(QTableWidget):
 
     def retrieveImageCoordinates(self, imageName):
         coords = []
+
+        # check if image bounding box information already exists
         if imageName in self.tableBuffer:
             coords = self.tableBuffer[imageName][0]
 
@@ -170,8 +180,7 @@ class LFDTable(QTableWidget):
         if len(self.tableBuffer) is 0:
             return 
 
-        currentImageUndoBuffer = self.tableBuffer[self.currentImageName][0]
-        if len(currentImageUndoBuffer) is 0:
+        if len(self.tableBuffer[self.currentImageName][0]) is 0:
             return
 
         coords = self.tableBuffer[self.currentImageName][0].pop()
@@ -187,8 +196,7 @@ class LFDTable(QTableWidget):
         if len(self.tableBuffer) is 0:
             return 
 
-        currentImageRedoBuffer = self.tableBuffer[self.currentImageName][1]
-        if len(currentImageRedoBuffer) is 0:
+        if len(self.tableBuffer[self.currentImageName][1]) is 0:
             return
 
         coords = self.tableBuffer[self.currentImageName][1].pop()
@@ -210,3 +218,36 @@ class LFDTable(QTableWidget):
             self.setItem(redoEntryRow, i, QTableWidgetItem(attribute))
 
         self.signals['updateImageCoordinates'].emit(self.tableBuffer[self.currentImageName][0])
+
+
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_1:
+            self.currentLabelState = 1
+            self.signals['setActiveLabelState'].emit(self.currentLabelState)
+        elif event.key() == Qt.Key_2:
+            self.currentLabelState = 2
+            self.signals['setActiveLabelState'].emit(self.currentLabelState)
+        elif event.key() == Qt.Key_3:
+            self.currentLabelState = 3
+            self.signals['setActiveLabelState'].emit(self.currentLabelState)
+        elif event.key() == Qt.Key_4:
+            self.currentLabelState = 4
+            self.signals['setActiveLabelState'].emit(self.currentLabelState)
+        elif event.key() == Qt.Key_5:
+            self.currentLabelState = 5
+            self.signals['setActiveLabelState'].emit(self.currentLabelState)
+        elif event.key() == Qt.Key_6:
+            self.currentLabelState = 6
+            self.signals['setActiveLabelState'].emit(self.currentLabelState)
+        elif event.key() == Qt.Key_7:
+            self.currentLabelState = 7
+            self.signals['setActiveLabelState'].emit(self.currentLabelState)
+        elif event.key() == Qt.Key_8:
+            self.currentLabelState = 8
+            self.signals['setActiveLabelState'].emit(self.currentLabelState)
+        elif event.key() == Qt.Key_9:
+            self.currentLabelState = 9
+            self.signals['setActiveLabelState'].emit(self.currentLabelState)
+        elif event.key() == Qt.Key_0:
+            self.currentLabelState = 0
+            self.signals['setActiveLabelState'].emit(self.currentLabelState)
