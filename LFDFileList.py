@@ -76,16 +76,14 @@ class LFDFileList(QListWidget):
         if len(self.fileList) is 0:
             return
 
-        if direction is 'UP':
-            print('LFDFileList Print: UP')
+        if direction is 0:
             currentSelection = self.currentItem()
             itemIndex = self.fileList.index(currentSelection.text())
             if itemIndex is not 0:
                 itemIndex -= 1
                 self.setCurrentRow(itemIndex)
 
-        if direction is 'DOWN':
-            print('LFDFileList Print: DOWN')
+        if direction is 1:
             currentSelection = self.currentItem()
             itemIndex = self.fileList.index(currentSelection.text())
             if itemIndex is not len(self.fileList) - 1:
@@ -94,6 +92,18 @@ class LFDFileList(QListWidget):
 
 
     def keyPressEvent(self, event):
+        if event.key() == Qt.Key_Up:
+            currentSelection = self.currentItem()
+            itemIndex = self.fileList.index(currentSelection.text())
+            if itemIndex is not 0:
+                itemIndex -= 1
+                self.setCurrentRow(itemIndex)
+        if event.key() == Qt.Key_Down:
+            currentSelection = self.currentItem()
+            itemIndex = self.fileList.index(currentSelection.text())
+            if itemIndex is not len(self.fileList) - 1:
+                itemIndex += 1
+                self.setCurrentRow(itemIndex)
         if event.key() == Qt.Key_1:
             self.currentLabelState = 1
             self.signals['setActiveLabelState'].emit(self.currentLabelState)

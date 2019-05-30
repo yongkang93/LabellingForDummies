@@ -63,19 +63,38 @@ class LFDTable(QTableWidget):
 
     def openCSV(self):
         options = QFileDialog.Options()
-        self.csvName, _ = QFileDialog.getOpenFileName(
+        csvName, a = QFileDialog.getOpenFileName(
                           self, 'Open CSV', '',
                           'CSV Files (*.csv)', options = options)
 
         # return if user closes the file dialog without selecting a csv file
-        if self.csvName is '':
+        if csvName is '':
             return
 
-        #df = pd.read_csv(self.csvName, index_col = 0)
+        reply = QMessageBox.question(self, 'Labelling for Dummies', "Do you want to save the current file?", QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+        if reply == QMessageBox.Yes:
+            self.saveCSV()
+
+        # if user open a csv, clear all current entries and buffer
+        self.csvName = csvName
+        self.tableBuffer = {}
+        while self.rowCount() > 0:
+            self.removeRow(0)
+        self.insertRow(0)
+        self.initialize()
+
         df = pd.read_csv(self.csvName)
         for index, row in df.iterrows():
             entry = list(row)
             self.insertEntry(entry)
+
+        # after loading the csv, refresh the coord to be display for the current image
+        coords = []
+        if self.currentImageName in self.tableBuffer:
+            coords = self.tableBuffer[self.currentImageName][0]
+
+        self.signals['updateImageCoordinates'].emit(coords)
+
 
 
     def saveCSV(self):

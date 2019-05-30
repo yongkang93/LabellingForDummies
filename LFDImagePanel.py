@@ -51,6 +51,8 @@ class LFDImagePanel(QWidget):
         self.currentImageHeight = self.currentImage.size().height()
 
         imageName = os.path.split(self.currentImageName)[1]
+
+        # retreive the image coord from LFDTable to display it during paintEvent()
         self.signals['retrieveImageCoordinates'].emit(imageName)
         self.update()
 
@@ -168,6 +170,11 @@ class LFDImagePanel(QWidget):
     def keyPressEvent(self, event):
         if event.modifiers() == Qt.ShiftModifier and event.key() == Qt.Key_D:
             self.isDeleting = True
+
+        if event.key() == Qt.Key_Up:
+            self.signals['setSelectedItem'].emit(0)
+        if event.key() == Qt.Key_Down:
+            self.signals['setSelectedItem'].emit(1)
 
         if event.key() == Qt.Key_1:
             self.currentLabelState = 1

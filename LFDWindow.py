@@ -171,6 +171,9 @@ class LFDWindow(QMainWindow):
         self.signals.append2table[list].connect(self.tableWidget.append2table)
         self.imageWidget.addSignal([('append2table', self.signals.append2table)])
 
+        self.signals.setSelectedItem[int].connect(self.listWidget.setSelectedItem)
+        self.imageWidget.addSignal([('setSelectedItem', self.signals.setSelectedItem)])
+
 
         ''' LFDLabelKeybinds Signals '''
         self.signals.updateLabelKeybinds[dict].connect(self.imageWidget.updateLabelKeybinds)

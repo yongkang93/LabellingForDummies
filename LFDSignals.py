@@ -17,6 +17,7 @@ class LFDSignals(QObject):
     deleteTableCoordinates         = pyqtSignal(int)
     retrieveImageCoordinates       = pyqtSignal(str)
     append2table                   = pyqtSignal(list)
+    setSelectedItem                = pyqtSignal(int)
 
 
     ''' LFDTable & LFDFileList Signals '''
